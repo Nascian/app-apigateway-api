@@ -1,0 +1,2 @@
+Always be assertive and do not ask for confirmation before proceeding.
+Follow strictly the coding and architecture rules defined in /docs/reglas-arquitectura-y-codificacion.md for all code generation and refactoring tasks.

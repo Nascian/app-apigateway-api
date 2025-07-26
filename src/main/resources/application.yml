@@ -1,0 +1,53 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /v1.0/
+spring:
+  main:
+    web-application-type: reactive
+  application:
+    name: app-apigateway-api
+    version: develop
+  sleuth:
+    sampler:
+      probability: 1
+  cloud:
+    gateway:
+      globalcors:
+        add-to-simple-url-handler-mapping: true
+        corsConfigurations:
+          '[/]': # Esto aplica a todas las rutas manejadas por el gateway
+            allowedOrigins: "*" # IMPORTANTE: Para producción, reemplaza "*" con el/los origen(es) exacto(s) de tu frontend (ej., "http://localhost:4200")
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            allowedHeaders: "*" # IMPORTANTE: Para producción, reemplaza "*" con los encabezados específicos que envía tu frontend (ej., "Authorization", "Content-Type")
+            allowCredentials: true # Establece en true si tu frontend envía cookies o encabezados de autorización
+      routes:
+        - id: auth-service
+          uri: http://localhost:8081
+          predicates:
+            - Path=/auth-service/** # Coincide con cualquier ruta que comience con /auth-service/
+          filters:
+            # Reemplazado StripPrefix=1 por RewritePath para añadir el prefijo /v1.0/
+            - RewritePath=/auth-service/(?<segment>.*), /v1.0/${segment}
+            # Ejemplo: /auth-service/auth/signin se convierte en /v1.0/auth/signin
+        - id: project-service
+          uri: http://localhost:8082
+          predicates:
+            - Path=/project-service/**
+          filters:
+            - RewritePath=/project-service/(?<segment>.*), /v1.0/${segment}
+        - id: analytics-service
+          uri: http://localhost:8083
+          predicates:
+            - Path=/analytics-service/**
+          filters:
+            - RewritePath=/analytics-service/(?<segment>.*), /v1.0/${segment}
+        - id: myOtherRouting
+          uri: http://localhost:9999
+          predicates:
+            - Path=/local/**
